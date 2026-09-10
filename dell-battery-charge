@@ -1,0 +1,88 @@
+#!/bin/bash
+
+set -euo pipefail
+
+battery=/sys/class/power_supply/BAT0
+charge_types="$battery/charge_types"
+start_threshold="$battery/charge_control_start_threshold"
+end_threshold="$battery/charge_control_end_threshold"
+
+fail() {
+  echo "omarchy-dell-battery-charge: $*" >&2
+  exit 1
+}
+
+supported() {
+  [[ -r /sys/class/dmi/id/sys_vendor ]] &&
+    [[ $(</sys/class/dmi/id/sys_vendor) == "Dell Inc." ]] &&
+    [[ -r $charge_types && -r $start_threshold && -r $end_threshold ]]
+}
+
+status() {
+  if ! supported; then
+    printf 'supported\tfalse\n'
+    return
+  fi
+
+  local types mode modes
+  types=$(<"$charge_types")
+  [[ $types =~ \[([^]]+)\] ]] || fail "cannot determine the active charge mode"
+  mode=${BASH_REMATCH[1]}
+  modes=${types//\[/}
+  modes=${modes//\]/}
+
+  printf 'supported\ttrue\n'
+  printf 'mode\t%s\n' "$mode"
+  printf 'modes\t%s\n' "$modes"
+  printf 'start\t%s\n' "$(<"$start_threshold")"
+  printf 'end\t%s\n' "$(<"$end_threshold")"
+}
+
+set_mode() {
+  local mode="$1"
+  local types
+
+  supported || fail "Dell battery charge controls are unavailable"
+  case "$mode" in
+  Standard | Adaptive | Fast | Trickle | Custom) ;;
+  *) fail "unsupported charge mode: $mode" ;;
+  esac
+
+  types=$(<"$charge_types")
+  types=${types//\[/}
+  types=${types//\]/}
+  [[ " $types " == *" $mode "* ]] || fail "charge mode is not supported by this firmware: $mode"
+  printf '%s' "$mode" >"$charge_types"
+}
+
+set_thresholds() {
+  local start="$1"
+  local end="$2"
+
+  supported || fail "Dell battery charge controls are unavailable"
+  [[ $start =~ ^[0-9]+$ && $end =~ ^[0-9]+$ ]] || fail "thresholds must be integers"
+  (( start >= 50 && start <= 95 )) || fail "start threshold must be between 50 and 95"
+  (( end >= 55 && end <= 100 )) || fail "end threshold must be between 55 and 100"
+  (( start < end )) || fail "start threshold must be below end threshold"
+
+  set_mode Custom
+  printf '%s' "$end" >"$end_threshold"
+  printf '%s' "$start" >"$start_threshold"
+}
+
+case "${1:-status}" in
+status)
+  status
+  ;;
+mode)
+  (( $# == 2 )) || fail "usage: $0 mode MODE"
+  set_mode "$2"
+  ;;
+thresholds)
+  (( $# == 3 )) || fail "usage: $0 thresholds START END"
+  set_thresholds "$2" "$3"
+  ;;
+*)
+  fail "usage: $0 {status|mode MODE|thresholds START END}"
+  ;;
+esac

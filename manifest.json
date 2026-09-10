@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "dell.power",
+  "name": "Dell Power",
+  "version": "1.0.0",
+  "author": "Benoît Legat",
+  "description": "Battery, power profile, Dell charge controls, and system stats",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "Dell Power",
+    "description": "Battery, power profile, Dell charge controls, and system stats",
+    "category": "System",
+    "allowMultiple": false
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.power"
+  }
+}
