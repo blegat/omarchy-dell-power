@@ -1,5 +1,8 @@
 # Dell Power for Omarchy
 
+> [!WARNING]
+> This plugin is discontinued and will not receive further development. Use [NIPSEN's Omarchy Dell Power plugin](https://github.com/NIPSEN/omarchy-dell-power) instead; it provides a more complete and actively maintained implementation.
+
 An Omarchy shell plugin that extends the built-in power panel with Dell battery charging controls.
 
 It keeps the standard battery information and power-profile picker, and adds controls for Dell's charging modes:
