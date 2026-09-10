@@ -2,13 +2,15 @@
 
 An Omarchy shell plugin that extends the built-in power panel with Dell battery charging controls.
 
-It keeps the standard battery information and power-profile picker, and adds controls for:
+It keeps the standard battery information and power-profile picker, and adds controls for Dell's charging modes:
 
-- Primarily AC (`Trickle` in the Linux kernel interface)
-- ExpressCharge (`Fast` in the Linux kernel interface)
-- Standard charging
-- Adaptive charging
-- Custom start and stop thresholds
+| Linux kernel | Dell firmware | Description |
+|---|---|---|
+| `Trickle` | Primarily AC | Limits charging to reduce battery wear when the laptop spends most of its time plugged in. |
+| `Fast` | ExpressCharge | Charges the battery faster; frequent use may age the battery sooner. |
+| `Standard` | Standard | Charges to 100% at a moderate rate for mixed battery and plugged-in use. |
+| `Adaptive` | Adaptive | Learns typical usage patterns and adjusts charging automatically. |
+| `Custom` | Custom | Starts and stops charging at user-selected thresholds. |
 
 Hover a charging mode or percentage button for a short explanation.
 
